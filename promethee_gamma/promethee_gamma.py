@@ -1,5 +1,6 @@
 from instance_reader import load_dataset
 import preference_functions as pf
+from PrometheePlotter import PrometheePlotter
 
 
 class PrometheeGammaInstance:
@@ -7,18 +8,20 @@ class PrometheeGammaInstance:
     phi_flag = False
     pref_flag = False
 
-    def __init__(self, Alt, wts, pref_fun, indifference_threshold=0.15, incomparability_threshold=0.15, pref_factor=1):
+    def __init__(self, Alt, wts, pref_fun, indifference_threshold=0.15, incomparability_threshold=0.3, pref_factor=15):
         self.A = Alt  # Alternatives
         self.w = wts  # weights
         self.pref_fct = pref_fun  # preference functions
         self.gammas = [[0 for _ in A] for _ in A]
         self.phis_c = [[0 for _ in w] for _ in A]
+        self.pref = [[5 for _ in A] for _ in A]
         self.I = [[False for _ in A] for _ in A]
         self.J = [[False for _ in A] for _ in A]
         self.P = [[False for _ in A] for _ in A]
         self.Ti = indifference_threshold
         self.Tj = incomparability_threshold
         self.Pf = pref_factor
+        self.plotter = PrometheePlotter()
 
     def compute_gammas(self):
         """
@@ -31,7 +34,7 @@ class PrometheeGammaInstance:
                 for (c, weight) in enumerate(self.w):
                     if a[c] > b[c]:
                         gamma += weight * (self.phis_c[ai][c] - self.phis_c[bi][c])
-                self.gammas[a][b] = gamma
+                self.gammas[ai][bi] = gamma
         self.gamma_flag = True
 
     def compute_phis_c(self):
@@ -44,7 +47,7 @@ class PrometheeGammaInstance:
                 for b in self.A:
                     phi += self.pref_fct[c].value(a[c] - b[c]) - self.pref_fct[c].value(b[c] - a[c])
                 phi /= len(self.A) - 1
-                self.phis_c[a][c] = phi
+                self.phis_c[ai][c] = phi
         self.phi_flag = True
 
     def compute_preferences(self):
@@ -59,13 +62,20 @@ class PrometheeGammaInstance:
                 rel_ij[3] = - rel_ij[2]
                 if (rel_ij[0] >= max(rel_ij[2], rel_ij[3])) or (rel_ij[1] <= 0 and rel_ij[2] <= 0 and rel_ij[3] <= 0):
                     self.I[i][j] = True
+                    self.pref[i][j] = 0
                 elif rel_ij[1] >= max(rel_ij[2], rel_ij[3]):
                     self.J[i][j] = True
+                    self.pref[i][j] = 1
                 elif rel_ij[2] >= rel_ij[3]:
                     self.P[i][j] = True
+                    self.pref[i][j] = 2
                 else:
                     self.P[j][i] = True
+                    self.pref[i][j] = 3
         self.pref_flag = True
+
+    def plot(self):
+        self.plotter.plot_gammas(self.gammas, self.I, self.J, self.P, self.Pf, self.Ti, self.Tj)
 
 
 if __name__ == "__main__":
@@ -74,5 +84,8 @@ if __name__ == "__main__":
     pref_fct = [pf.make_pref_fct(c["type"], c["ceils"]) for c in pref_fct_desc]
 
     instance = PrometheeGammaInstance(A, w, pref_fct)
-    instance.compute_gammas()
-    print(instance.gammas)
+    instance.compute_preferences()
+    for a in instance.pref:
+        print(a)
+
+    instance.plot()
