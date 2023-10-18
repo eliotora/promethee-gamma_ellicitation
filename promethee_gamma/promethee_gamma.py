@@ -8,16 +8,13 @@ class PrometheeGammaInstance:
     phi_flag = False
     pref_flag = False
 
-    def __init__(self, Alt, wts, pref_fun, indifference_threshold=0.15, incomparability_threshold=0.3, pref_factor=15):
+    def __init__(self, Alt, wts, pref_fun, indifference_threshold=0.15, incomparability_threshold=0.15, pref_factor=1):
         self.A = Alt  # Alternatives
         self.w = wts  # weights
         self.pref_fct = pref_fun  # preference functions
-        self.gammas = [[0 for _ in A] for _ in A]
-        self.phis_c = [[0 for _ in w] for _ in A]
-        self.pref = [[5 for _ in A] for _ in A]
-        self.I = [[False for _ in A] for _ in A]
-        self.J = [[False for _ in A] for _ in A]
-        self.P = [[False for _ in A] for _ in A]
+        self.gammas = [[0 for _ in self.A] for _ in self.A]
+        self.phis_c = [[0 for _ in self.w] for _ in self.A]
+        self.pref = [[0 for _ in self.A] for _ in self.A]
         self.Ti = indifference_threshold
         self.Tj = incomparability_threshold
         self.Pf = pref_factor
@@ -55,37 +52,33 @@ class PrometheeGammaInstance:
         rel_ij = [0, 0, 0, 0]
 
         for i in range(len(self.gammas)):
-            for j in range(len(self.gammas[i + 1:])):
+            for j in range(len(self.gammas)):
                 rel_ij[0] = self.Ti - max(self.gammas[i][j], self.gammas[j][i])
                 rel_ij[1] = min(self.gammas[i][j], self.gammas[j][i]) - self.Tj
                 rel_ij[2] = (self.gammas[i][j] - self.gammas[j][i]) / self.Pf
                 rel_ij[3] = - rel_ij[2]
                 if (rel_ij[0] >= max(rel_ij[2], rel_ij[3])) or (rel_ij[1] <= 0 and rel_ij[2] <= 0 and rel_ij[3] <= 0):
-                    self.I[i][j] = True
-                    self.pref[i][j] = 0
-                elif rel_ij[1] >= max(rel_ij[2], rel_ij[3]):
-                    self.J[i][j] = True
                     self.pref[i][j] = 1
-                elif rel_ij[2] >= rel_ij[3]:
-                    self.P[i][j] = True
+                elif rel_ij[1] >= max(rel_ij[2], rel_ij[3]):
                     self.pref[i][j] = 2
-                else:
-                    self.P[j][i] = True
+                elif rel_ij[2] >= rel_ij[3]:
                     self.pref[i][j] = 3
+                else:
+                    self.pref[i][j] = 4
         self.pref_flag = True
 
     def plot(self):
-        self.plotter.plot_gammas(self.gammas, self.I, self.J, self.P, self.Pf, self.Ti, self.Tj)
+        self.plotter.plot_gammas(self.gammas, self.pref, self.Pf, self.Ti, self.Tj)
 
 
 if __name__ == "__main__":
-    dataset = "data/HDI20_Classic"
+    # dataset = "data/HDI20_Classic"
+    # dataset = "data/SHA_TOP15"
+    dataset = "data/HDI20_1and3_quartiles"
     A, w, pref_fct_desc = load_dataset(dataset)
     pref_fct = [pf.make_pref_fct(c["type"], c["ceils"]) for c in pref_fct_desc]
 
-    instance = PrometheeGammaInstance(A, w, pref_fct)
+    instance = PrometheeGammaInstance(A, w, pref_fct, 0.15, 0.15, 4)
     instance.compute_preferences()
-    for a in instance.pref:
-        print(a)
 
     instance.plot()
