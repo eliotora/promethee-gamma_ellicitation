@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
-
+nP = 4
+P = 3
+J = 2
+I = 1
 class PrometheePlotter:
     def __init__(self):
         pass
@@ -16,11 +18,11 @@ class PrometheePlotter:
 
         for i in range(len(pref)):
             for j in range(i + 1, len(pref)):
-                if pref[i][j] == 1:
+                if pref[i][j] == I:
                     plt.plot(gammas[i][j], gammas[j][i], "bo")
-                elif pref[i][j] == 2:
+                elif pref[i][j] == J:
                     plt.plot(gammas[i][j], gammas[j][i], "go")
-                elif pref[i][j] == 3 or pref[i][j] == 4:
+                elif pref[i][j] == P or pref[i][j] == nP:
                     plt.plot(gammas[i][j], gammas[j][i], "ro")
         plt.show()
 

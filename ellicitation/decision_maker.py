@@ -1,8 +1,8 @@
-from promethee_gamma.promethee_gamma import PrometheeGammaInstance
+from promethee_gamma import *
 from random import *
-from promethee_gamma.preference_functions import make_pref_fct
 
-class decisionMaker:
+
+class DecisionMaker:
     def __init__(self, A, pf):
         self.indT = random() / 5
         self.incT = max(0.15, self.indT) + random() / 5
@@ -12,3 +12,7 @@ class decisionMaker:
 
         self.pgInstance = PrometheeGammaInstance(A, self.w, pf, self.indT, self.incT, self.prefF)
         self.pgInstance.compute_preferences()
+        self.relations = self.pgInstance.pref
+
+    def query(self, i, j):
+        return self.relations[i][j]

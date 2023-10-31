@@ -1,6 +1,6 @@
-from instance_reader import load_dataset
+from instance_reader import *
 import preference_functions as pf
-from PrometheePlotter import PrometheePlotter
+from PrometheePlotter import PrometheePlotter, I, J, P, nP
 
 
 class PrometheeGammaInstance:
@@ -58,13 +58,13 @@ class PrometheeGammaInstance:
                 rel_ij[2] = (self.gammas[i][j] - self.gammas[j][i]) / self.Pf
                 rel_ij[3] = - rel_ij[2]
                 if (rel_ij[0] >= max(rel_ij[2], rel_ij[3])) or (rel_ij[1] <= 0 and rel_ij[2] <= 0 and rel_ij[3] <= 0):
-                    self.pref[i][j] = 1
+                    self.pref[i][j] = I
                 elif rel_ij[1] >= max(rel_ij[2], rel_ij[3]):
-                    self.pref[i][j] = 2
+                    self.pref[i][j] = J
                 elif rel_ij[2] >= rel_ij[3]:
-                    self.pref[i][j] = 3
+                    self.pref[i][j] = P
                 else:
-                    self.pref[i][j] = 4
+                    self.pref[i][j] = nP
         self.pref_flag = True
 
     def plot(self):
