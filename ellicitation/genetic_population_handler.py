@@ -111,8 +111,22 @@ class GeneticPopulationHandler:
         :param p2: a different element of the current population
         :return: a new solution based on the genome of the two parents
         """
-        w_new = [(p1.weights[i] + p2.weights[i]) /2 for i in range(len(p1.weights))]
+        w_new = [(p1.weights[i] + p2.weights[i]) / 2 for i in range(len(p1.weights))]
         indT_new = (p1.Ti + p2.Ti) / 2
         incT_new = (p1.Tj + p2.Tj) / 2
         Pf = (p1.prefFactor + p2.prefFactor) / 2
+        return GeneticSolution(w_new, indT_new, incT_new, Pf, self.A, self.pref_fct)
+
+    def crossover2(self, p1:GeneticSolution, p2:GeneticSolution):
+        """
+        Crossover operator between two parents
+        :param p1: an element of the current population
+        :param p2: a different element of the current population
+        :return: a new solution based on the genome of the two parents
+        """
+        mixing_genome = [0 if random() < 0.5 else 1 for _ in range(len(p1.weights) + 3)]
+        w_new = [p1.weights[i] if mixing_genome[i] == 0 else p2.genome[i] for i in mixing_genome[:-3]]
+        indT_new = p1.Ti if mixing_genome[len(p1.weights)] == 0 else p2.Ti
+        incT_new = p1.Tj if mixing_genome[len(p1.weights)+1] == 0 else p2.Tj
+        Pf = p1.prefFactor if mixing_genome[-1] == 0 else p2.prefFactor
         return GeneticSolution(w_new, indT_new, incT_new, Pf, self.A, self.pref_fct)

@@ -33,8 +33,8 @@ def elicitationProcedure():
     asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
 
     # Create decision maker with random or chosen parameters
-    # dm = DecisionMaker(A, pref_fct)
-    dm = DecisionMaker(A, pref_fct, w, 0.15, 0.15, 4)
+    dm = DecisionMaker(A, pref_fct)
+    # dm = DecisionMaker(A, pref_fct, w, 0.15, 0.15, 4)
 
     # Plotter for utils
     plotter = PrometheePlotter()

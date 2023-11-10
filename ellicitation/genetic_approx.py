@@ -30,7 +30,7 @@ class GeneticSolution:
         self.weights = [w/sum(self.weights) for w in self.weights]
 
         self.Ti += random() * 0.3 * (-1) ** randint(0, 1)
-        self.Tj += min(self.Ti, random() * 0.3 * (-1) ** randint(0, 1))
+        self.Tj = min(self.Ti, self.Tj + random() * 0.3 * (-1) ** randint(0, 1))
         self.prefFactor += random() * 2 * (-1) ** randint(0, 1)
         if self.prefFactor <= 0:
             self.prefFactor = 0.001
