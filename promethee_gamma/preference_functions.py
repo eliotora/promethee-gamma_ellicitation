@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import math
-
 """Preference function classes and generator."""
 
 

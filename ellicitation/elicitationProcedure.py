@@ -30,6 +30,7 @@ def elicitationProcedure():
     print("Max fitness is:", maxFitness)
 
     # Setup memory of results of query
+    query_nbr = 10
     asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
 
     # Create decision maker with random or chosen parameters
@@ -51,17 +52,24 @@ def elicitationProcedure():
 
     # Genetic method (in progress)
     popManager = GeneticPopulationHandler(100, A, pref_fct)
-    popManager.evalPop(dm.pgInstance.pref)
-    solution = popManager.population[-1]
-    print("Best fitness: ", solution.fitness, solution)
-    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, solution.prefFactor, solution.Ti, solution.Tj)
-    for i in range(100):
-        print("Gen ", i)
-        popManager.nextGen(dm.pgInstance.pref)
+    for q in range(query_nbr):
+        i, j = determine_next_query(A, w)
+        while asked_pref[i][j] != 0:
+            i, j = determine_next_query(A, w)
+
+        asked_pref[i][j] = dm.pgInstance.pref[i][j]
+
+        popManager.evalPop(asked_pref)
         solution = popManager.population[-1]
         print("Best fitness: ", solution.fitness, solution)
-        if solution.fitness == maxFitness:
-            break
+        for g in range(100):
+            print("Gen ", g)
+            popManager.nextGen(asked_pref)
+            solution = popManager.population[-1]
+            print("Best fitness: ", solution.fitness, solution)
+            worst = min(popManager.population, key=lambda e: e.fitness)
+            if worst == q:
+                break
     plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, solution.prefFactor, solution.Ti, solution.Tj)
 
     # i, j = determine_next_query(A, w)

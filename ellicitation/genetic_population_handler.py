@@ -30,6 +30,7 @@ class GeneticPopulationHandler:
             parent1, parent2 = self.tournamentSelect(), self.tournamentSelect()
             # parent1, parent2 = self.rouletteSelect(), self.rouletteSelect()
             child = self.crossover(parent1, parent2)
+            # child = self.crossover2(parent1, parent2)
             if random() <= self.mutationProb:
                 child.mutate()
             child.evaluate(knownPref)
@@ -125,7 +126,7 @@ class GeneticPopulationHandler:
         :return: a new solution based on the genome of the two parents
         """
         mixing_genome = [0 if random() < 0.5 else 1 for _ in range(len(p1.weights) + 3)]
-        w_new = [p1.weights[i] if mixing_genome[i] == 0 else p2.genome[i] for i in mixing_genome[:-3]]
+        w_new = [p1.weights[i] if mixing_genome[i] == 0 else p2.weights[i] for i in mixing_genome[:-3]]
         indT_new = p1.Ti if mixing_genome[len(p1.weights)] == 0 else p2.Ti
         incT_new = p1.Tj if mixing_genome[len(p1.weights)+1] == 0 else p2.Tj
         Pf = p1.prefFactor if mixing_genome[-1] == 0 else p2.prefFactor
