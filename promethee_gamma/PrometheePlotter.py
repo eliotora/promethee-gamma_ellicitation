@@ -8,7 +8,7 @@ class PrometheePlotter:
     def __init__(self):
         pass
 
-    def plot_gammas(self, gammas, pref, Pf, Ti, Tj):
+    def plot_gammas(self, gammas, pref, Pf, Ti, Tj, title):
         gammax = max([max(gamma) for gamma in gammas])
         plt.figure(figsize=(7, 7))
         plt.plot([0, 0], [0, gammax], "k-", [0, gammax], [0, 0], "k-", [Ti, Tj], [Ti, Tj], "r-")
@@ -24,6 +24,7 @@ class PrometheePlotter:
                     plt.plot(gammas[i][j], gammas[j][i], "go")
                 elif pref[i][j] == P or pref[i][j] == nP:
                     plt.plot(gammas[i][j], gammas[j][i], "ro")
+        plt.title(title)
         plt.show()
 
 

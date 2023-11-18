@@ -1,17 +1,16 @@
 from decision_maker import DecisionMaker
 from instance_reader import load_dataset
-from promethee_gamma import PrometheeGammaInstance, I, J, P, nP
-from random import random, randint
+from random import randint
 import preference_functions as pf
 from genetic_population_handler import GeneticPopulationHandler
 from promethee_gamma import PrometheePlotter
 
 
 def determine_next_query(A, w):
-    i = randint(0, len(A))
-    j = randint(0, len(A))
+    i = randint(0, len(A)-1)
+    j = randint(0, len(A)-1)
     while i == j:
-        j = randint(0, len(A))
+        j = randint(0, len(A)-1)
     return i, j
 
 
@@ -31,6 +30,8 @@ def elicitationProcedure():
 
     # Setup memory of results of query
     query_nbr = 10
+    # query_nbr = 20
+    # query_nbr = 50
     asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
 
     # Create decision maker with random or chosen parameters
@@ -40,66 +41,47 @@ def elicitationProcedure():
     # Plotter for utils
     plotter = PrometheePlotter()
 
-    # Random values to start with one solution
-    # Pf = random() * 5
-    # indT = random() / 5
-    # incT = max(0.15, indT) + random() / 5
-    # w_approx = [random() for _ in range(len(pref_fct))]
-    # w_approx = [i / sum(w_approx) for i in w_approx]
-    #
-    # pgammainst = PrometheeGammaInstance(A, w_approx, pref_fct, indT, incT, Pf)
-    # pgammainst.compute_preferences()
 
     # Genetic method (in progress)
     popManager = GeneticPopulationHandler(100, A, pref_fct)
     for q in range(query_nbr):
-        i, j = determine_next_query(A, w)
+        # i, j = determine_next_query(A, w)
+        i, j, d = popManager.determine_next_query()
+
         while asked_pref[i][j] != 0:
+            # i, j, d = popManager.determine_next_query()
             i, j = determine_next_query(A, w)
+            d = 0
+        print("\n", i, j, d)
 
         asked_pref[i][j] = dm.pgInstance.pref[i][j]
+        best = sum([1 for i in range(len(asked_pref)) for j in range(len(asked_pref)) if asked_pref[i][j] != 0])
+        print(best)
 
         popManager.evalPop(asked_pref)
         solution = popManager.population[-1]
-        print("Best fitness: ", solution.fitness, solution)
-        for g in range(100):
-            print("Gen ", g)
+        # print("Best fitness: ", solution.fitness, solution)
+        for g in range(50):
+            # print(g, end="\r")
             popManager.nextGen(asked_pref)
-            solution = popManager.population[-1]
-            print("Best fitness: ", solution.fitness, solution)
             worst = min(popManager.population, key=lambda e: e.fitness)
-            if worst == q:
+            print("Gen", g, ", Worst fitness: ", worst.fitness, worst, end="\r")
+            if worst.fitness == best:
                 break
-    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, solution.prefFactor, solution.Ti, solution.Tj)
+        solution = popManager.population[-1]
+    popManager.evalPop(dm.pgInstance.pref)
+    solution = popManager.population[-1]
+    plotter.plot_gammas(solution.handler.gammas, solution.handler.pref, solution.prefFactor, solution.Ti, solution.Tj, "Best solution")
+    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, solution.prefFactor, solution.Ti, solution.Tj, "Best solution on DMs preferences and gammas")
+    print("Best: ", popManager.population[-1].fitness)
+    print("Worst: ", popManager.population[0].fitness)
 
-    # i, j = determine_next_query(A, w)
-    # asked_pref[i][j] = dm.query(i, j)
-    # print(asked_pref[i][j])
-    # # w, indT, incT, Pf = next_approx(w, indT, incT, Pf, asked_pref, i, j)
-    # solution = GeneticSolution(w_approx, indT, incT, Pf, A, pref_fct)
-    # print("Fitness: " + str(solution.evaluate(dm.pgInstance.pref)))
-    # error = []
-    # for i, line in enumerate(solution.handler.pref):
-    #     l = []
-    #     for j, elem in enumerate(line):
-    #         if elem == dm.pgInstance.pref[i][j]:
-    #             l.append(1)
-    #         else:
-    #             l.append(-1)
-    #     error.append(l)
-    #     print(l)
-    #
-    # print("Errors: ", str(sum([sum(l) for l in error])))
-
-
-
-    # plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, solution.prefFactor, solution.Ti, solution.Tj)
-    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, dm.prefFact, dm.indT, dm.incT)
-    error = (sum([abs(dm.w[i] - solution.weights[i])/dm.w[i] for i in range(len(dm.w))]) +
-             abs(dm.prefFact - solution.prefFactor)/dm.prefFact +
-             abs(dm.indT - solution.Ti)/dm.indT +
-             abs(dm.incT - solution.Tj)/dm.incT)
-    print(error, error/(len(dm.w)+3))
+    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, dm.prefFact, dm.indT, dm.incT, "DM preferences")
+    # error = (sum([abs(dm.w[i] - solution.weights[i])/dm.w[i] for i in range(len(dm.w))]) +
+    #          abs(dm.prefFact - solution.prefFactor)/dm.prefFact +
+    #          abs(dm.indT - solution.Ti)/dm.indT +
+    #          abs(dm.incT - solution.Tj)/dm.incT)
+    # print(error, error/(len(dm.w)+3))
 
 
 if __name__ == "__main__":

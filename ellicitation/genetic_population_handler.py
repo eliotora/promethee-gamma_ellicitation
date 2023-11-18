@@ -125,9 +125,23 @@ class GeneticPopulationHandler:
         :param p2: a different element of the current population
         :return: a new solution based on the genome of the two parents
         """
-        mixing_genome = [0 if random() < 0.5 else 1 for _ in range(len(p1.weights) + 3)]
+        mixing_genome = [0 if random() < 0.5 else 1 for _ in range(len(p1.weights))]
         w_new = [p1.weights[i] if mixing_genome[i] == 0 else p2.weights[i] for i in mixing_genome[:-3]]
-        indT_new = p1.Ti if mixing_genome[len(p1.weights)] == 0 else p2.Ti
-        incT_new = p1.Tj if mixing_genome[len(p1.weights)+1] == 0 else p2.Tj
-        Pf = p1.prefFactor if mixing_genome[-1] == 0 else p2.prefFactor
+        w_new = [w/sum(w_new) for w in w_new]
+        which = random()
+        indT_new = p1.Ti if which < 0.5 else p2.Ti
+        incT_new = p1.Tj if which < 0.5 else p2.Tj
+        Pf = p1.prefFactor if which < 0.5 else p2.prefFactor
         return GeneticSolution(w_new, indT_new, incT_new, Pf, self.A, self.pref_fct)
+
+    def determine_next_query(self):
+        best_to_query = (0, 0, 0)
+        for i in range(len(self.A)):
+            for j in range(len(self.A)):
+                votes = [1, 1, 1, 1]
+                for solution in self.population:
+                    votes[solution.handler.pref[i][j]-1] += 1
+                disagreement = votes[0] * votes[1] * votes[2] * votes[3]
+                if disagreement > best_to_query[2]:
+                    best_to_query = (i, j, disagreement)
+        return best_to_query

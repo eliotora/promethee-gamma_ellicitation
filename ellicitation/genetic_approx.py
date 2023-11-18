@@ -16,6 +16,7 @@ class GeneticSolution:
 
     def evaluate(self, knownPref):
         computedPref = self.handler.pref
+        self.fitness = 0
         for i in range(len(knownPref)):
             for j, pref in enumerate(knownPref[i]):
                 if pref == 0:
