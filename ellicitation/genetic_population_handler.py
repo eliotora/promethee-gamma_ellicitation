@@ -1,5 +1,5 @@
 from random import random, choice
-
+import numpy as np
 from genetic_approx import GeneticSolution
 
 
@@ -141,7 +141,7 @@ class GeneticPopulationHandler:
                 votes = [1, 1, 1, 1]
                 for solution in self.population:
                     votes[solution.handler.pref[i][j]-1] += 1
-                disagreement = votes[0] * votes[1] * votes[2] * votes[3]
+                disagreement = np.sqrt(votes[0]**2 + votes[1]**2 + votes[2]**2 + votes[3]**2)
                 if disagreement > best_to_query[2]:
                     best_to_query = (i, j, disagreement)
         return best_to_query
