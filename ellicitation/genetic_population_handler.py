@@ -1,14 +1,18 @@
 from random import random, choice
 import numpy as np
 from genetic_approx import GeneticSolution
+from query_selector import *
 
 
 class GeneticPopulationHandler:
     mutationProb = 0.2
 
-    def __init__(self, pop_size, A, pref_fct):
+    def __init__(self, pop_size, A, pref_fct, query_selector):
+        self.asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
+        self.gen_nbr = 50
         self.A = A
         self.pref_fct = pref_fct
+        self.query_selector = query_selector
         self.population = []
         for i in range(pop_size):
             Pf = random() * 5
@@ -18,12 +22,12 @@ class GeneticPopulationHandler:
             w = [i / sum(w) for i in w]
             self.population.append(GeneticSolution(w, indT, incT, Pf, A, pref_fct))
 
-    def evalPop(self, knownPref):
+    def evalPop(self, ):
         for e in self.population:
-            e.evaluate(knownPref)
+            e.evaluate(self.asked_pref)
         self.population.sort(key=lambda e: e.fitness)
 
-    def nextGen(self, knownPref):
+    def nextGen(self):
         newGen = []
         while len(newGen) < len(self.population):
             # parent1, parent2 = self.mixedSelection()
@@ -33,7 +37,7 @@ class GeneticPopulationHandler:
             # child = self.crossover2(parent1, parent2)
             if random() <= self.mutationProb:
                 child.mutate()
-            child.evaluate(knownPref)
+            child.evaluate(self.asked_pref)
             newGen.append(child)
 
         totalPop = self.population + newGen
@@ -134,14 +138,29 @@ class GeneticPopulationHandler:
         Pf = p1.prefFactor if which < 0.5 else p2.prefFactor
         return GeneticSolution(w_new, indT_new, incT_new, Pf, self.A, self.pref_fct)
 
-    def determine_next_query(self):
-        best_to_query = (0, 0, 0)
-        for i in range(len(self.A)):
-            for j in range(len(self.A)):
-                votes = [1, 1, 1, 1]
-                for solution in self.population:
-                    votes[solution.handler.pref[i][j]-1] += 1
-                disagreement = np.sqrt(votes[0]**2 + votes[1]**2 + votes[2]**2 + votes[3]**2)
-                if disagreement > best_to_query[2]:
-                    best_to_query = (i, j, disagreement)
-        return best_to_query
+    def next_query(self):
+        if self.query_selector == vote_based_query:
+            return self.query_selector(self.A, self.population)
+        elif self.query_selector == discrimination_power_based_query:
+            phic = self.population[0].handler.phis_c
+            samples = [p.weights + [p.Ti] + [p.Tj] + [p.prefFactor] for p in self.population]
+            return self.query_selector(phic, samples)
+
+    def assimilate_query(self, i, j, answer):
+        self.asked_pref[i][j] = answer
+        best = sum([1 for i in range(len(self.asked_pref)) for j in range(len(self.asked_pref)) if self.asked_pref[i][j] != 0])
+
+        self.evalPop()
+        for g in range(self.gen_nbr):
+            print("Gen ", g)
+            self.nextGen()
+            worst = min(self.population, key=lambda e: e.fitness)
+            print(best, worst.fitness)
+            if worst.fitness == best:
+                print("Break after: ", g, " generations")
+                break
+        solution = self.population[-1]
+        return solution.weights, solution.Ti, solution.Tj, solution.prefFactor
+
+    def getSolution(self):
+        return self.population[-1]
