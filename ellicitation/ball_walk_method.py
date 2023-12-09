@@ -122,7 +122,6 @@ class SampleBasedProcedure:
             point = self.samples[0]
 
         for s in range(self.Nsamples - len(self.samples)):
-            print(s, end=" ")
             step = [random.random() * delta * 2 - delta for d in range(D)]
             next_point = [point[d] + step[d] for d in range(D)]
             next_point = normalize_weights(next_point)
@@ -188,3 +187,6 @@ class SampleBasedProcedure:
             res.append(np.percentile(x, 50))
         # print("\t {0:0.2f}".format(total))
         return res[:-3], res[-3], res[-2], res[-1]
+
+    def name(self):
+        return "ball_walk"

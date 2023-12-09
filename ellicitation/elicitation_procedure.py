@@ -1,5 +1,6 @@
 from numpy.random import randint
 
+from ellicitation import misc
 from promethee_gamma import PrometheePlotter
 from decision_maker import DecisionMaker
 from genetic_population_handler import GeneticPopulationHandler
@@ -15,39 +16,40 @@ def determine_next_query(A):
     return i, j
 
 
-class ElicitationProcedure:
-    def __init__(self, A, pref_fct, query_nbr, size):
-        # Create decision maker with random or chosen parameters
-        dm = DecisionMaker(A, pref_fct)
-        # dm = DecisionMaker(A, pref_fct, w, 0.15, 0.15, 4)
+def elicitationProcedure(A, pref_fct, query_nbr, size, procedure, query_selector):
+    # Create decision maker with random or chosen parameters
+    dm = DecisionMaker(A, pref_fct)
+    # dm = DecisionMaker(A, pref_fct, w, 0.15, 0.15, 4)
 
-        # Setup memory of results of query
-        asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
+    # Setup memory of results of query
+    asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
 
-        # Plotter for utils
-        plotter = PrometheePlotter()
+    # Plotter for utils
+    plotter = PrometheePlotter()
 
-        # Procedure
-        # procedure = GeneticPopulationHandler(size, A, pref_fct, vote_based_query)
-        # procedure = GeneticPopulationHandler(size, A, pref_fct, discrimination_power_based_query)
-        # procedure = SampleBasedProcedure(size, A, pref_fct, vote_based_query, dm.pgInstance.phis_c)
-        procedure = SampleBasedProcedure(size, A, pref_fct, discrimination_power_based_query, dm.pgInstance.phis_c)
+    # Accuracies
+    accuracies = []
 
-        for q in range(query_nbr):
-            print(q)
-            i, j = procedure.next_query()
-            print("Query:", i, j, asked_pref[i][j])
+    # Procedure
+    procedure = procedure(size, A, pref_fct, query_selector, dm.pgInstance.phis_c)
+    # procedure = GeneticPopulationHandler(size, A, pref_fct, vote_based_query, dm.pgInstance.phis_c)
+    # procedure = GeneticPopulationHandler(size, A, pref_fct, discrimination_power_based_query, dm.pgInstance.phis_c)
+    # procedure = SampleBasedProcedure(size, A, pref_fct, vote_based_query, dm.pgInstance.phis_c)
+    # procedure = SampleBasedProcedure(size, A, pref_fct, discrimination_power_based_query, dm.pgInstance.phis_c)
+    print("Query: ", end=" ")
+    for q in range(query_nbr):
+        print(q, end=" ")
+        i, j = procedure.next_query()
 
-            while asked_pref[i][j] != 0:
-                # i, j, d = popManager.determine_next_query()
-                i, j = determine_next_query(A)
-                print("Random query chosen: ", i, j)
+        while asked_pref[i][j] != 0:
+            # i, j, d = popManager.determine_next_query()
+            i, j = determine_next_query(A)
 
-            asked_pref[i][j] = dm.pgInstance.pref[i][j]
-            procedure.assimilate_query(i, j, dm.pgInstance.pref[i][j])
+        asked_pref[i][j] = dm.pgInstance.pref[i][j]
+        w, Ti, Tj, Pf = procedure.assimilate_query(i, j, dm.pgInstance.pref[i][j])
 
-        self.solution = procedure.getSolution()
-        plotter.plot_gammas(self.solution.handler.gammas, self.solution.handler.pref, self.solution.prefFactor,
-                            self.solution.Ti, self.solution.Tj, "Best solution")
-        plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, self.solution.prefFactor, self.solution.Ti,
-                            self.solution.Tj,"Best solution on DMs preferences and gammas")
+        accuracy = misc.evaluate_parameters(A, pref_fct, dm.indT, dm.incT, dm.w, Ti, Tj, w, dm.pgInstance.pref)
+        accuracies.append(accuracy)
+    print()
+    w, Ti, Tj, Pf = procedure.analyse_sample()
+    return w, Ti, Tj, Pf, accuracies

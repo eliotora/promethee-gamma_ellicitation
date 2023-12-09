@@ -1,18 +1,22 @@
+import pprint
+
 from decision_maker import DecisionMaker
+from ellicitation import misc
 from instance_reader import load_dataset
-from random import randint
+import random as rd
 import preference_functions as pf
 from genetic_population_handler import GeneticPopulationHandler
 from promethee_gamma import PrometheePlotter
+from ball_walk_method import SampleBasedProcedure
 from query_selector import *
-from elicitation_procedure import ElicitationProcedure
+from elicitation_procedure import elicitationProcedure
 
 
 def determine_next_query(A, w):
-    i = randint(0, len(A)-1)
-    j = randint(0, len(A)-1)
+    i = rd.randint(0, len(A) - 1)
+    j = rd.randint(0, len(A) - 1)
     while i == j:
-        j = randint(0, len(A)-1)
+        j = rd.randint(0, len(A) - 1)
     return i, j
 
 
@@ -20,38 +24,54 @@ def next_approx(w, indT, incT, Pf, asked_pref, i, j):
     return w, indT, incT, Pf
 
 
-def elicitationProcedure():
-    # Choose dataset and load it
-    # dataset = "data/HDI20_Classic"
-    # dataset = "data/SHA_TOP15"
-    dataset = "data/HDI20_1and3_quartiles"
-    A, w, pref_fct_desc = load_dataset(dataset)
-    pref_fct = [pf.make_pref_fct(c["type"], c["ceils"]) for c in pref_fct_desc]
-    maxFitness = len(A)**2
-    print("Max fitness is:", maxFitness)
+def compute_accuracy(A, pref_fct, query_nbr, tests, size, procedure, query_selector):
+    all_accuracies = []
 
-    # Setup memory of results of query
-    query_nbr = 10
-    # query_nbr = 20
-    # query_nbr = 50
-    asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
+    for test_id in range(tests):
+        print("##########", test_id, "##########")
+        rd.seed(test_id)
+        np.random.seed(test_id)
+        rd.shuffle(A)
 
-    popManager.evalPop(dm.pgInstance.pref)
-    solution = popManager.population[-1]
-    plotter.plot_gammas(solution.handler.gammas, solution.handler.pref, solution.prefFactor, solution.Ti, solution.Tj, "Best solution")
-    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, solution.prefFactor, solution.Ti, solution.Tj, "Best solution on DMs preferences and gammas")
-    print("Best: ", popManager.population[-1].fitness)
-    print("Worst: ", popManager.population[0].fitness)
+        w, Ti, Tj, Pf, accuracies = elicitationProcedure(A, pref_fct, query_nbr, size, procedure, query_selector)
+        all_accuracies.append(accuracies)
 
-    plotter.plot_gammas(dm.pgInstance.gammas, dm.pgInstance.pref, dm.prefFact, dm.indT, dm.incT, "DM preferences")
-
+    return all_accuracies
 
 
 if __name__ == "__main__":
     # elicitationProcedure()
-    dataset = "data/HDI20_1and3_quartiles"
-    A, w, pref_fct_desc = load_dataset(dataset)
-    pref_fct = [pf.make_pref_fct(c["type"], c["ceils"]) for c in pref_fct_desc]
-    ElicitationProcedure(A, pref_fct, 20, 100)
+    SHA_Q13 = "data/SHA_1and3_quartiles"
+    HDI_Q13 = "data/HDI_1and3_quartiles"
+    HDI_20 = "data/HDI20_Classic"
+    EPI2020_Q13 = "data/EPI2020_1and3_quartiles"
+    TIMES_Q13 = "data/TIMES_1and3_quartiles"
+    datasets = [SHA_Q13, HDI_Q13, HDI_20, EPI2020_Q13, TIMES_Q13]
+    # datasets = [HDI_Q13]
+    procedures = [SampleBasedProcedure, GeneticPopulationHandler]
+    query_selectors = [vote_based_query, discrimination_power_based_query]
 
+    query_number = 20
+    size = 100
+    tests = 10
 
+    for procedure in procedures:
+        for query_selector in query_selectors:
+            accuracies = []
+            for dataset in datasets:
+                print(procedure.__name__, query_selector.__name__, dataset, "refs:", query_number, "tests:", tests,
+                      "samples:", size)
+                A, w, pref_fct_desc = load_dataset(dataset)
+                pref_fct = [pf.make_pref_fct(c["type"], c["ceils"]) for c in pref_fct_desc]
+
+                accuracies_dataset = compute_accuracy(A, pref_fct, query_number, tests, size, procedure, query_selector)
+
+                misc.print_accuracies(accuracies_dataset)
+                accuracies.extend(accuracies_dataset)
+
+            file_name = procedure.__name__ + "_" + query_selector.__name__ + "_query_" + str(
+                query_number) + "_tests_" + str(tests) + "_size_" + str(size)
+            with open("results/" + file_name + ".txt", "w") as file:
+                for ai, a in enumerate(accuracies):
+                    file.write(datasets[ai])
+                    file.write(str(a))

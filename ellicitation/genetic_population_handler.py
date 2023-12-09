@@ -7,10 +7,11 @@ from query_selector import *
 class GeneticPopulationHandler:
     mutationProb = 0.2
 
-    def __init__(self, pop_size, A, pref_fct, query_selector):
+    def __init__(self, pop_size, A, pref_fct, query_selector, phi_c):
         self.asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
         self.gen_nbr = 50
         self.A = A
+        self.phi_c = phi_c
         self.pref_fct = pref_fct
         self.query_selector = query_selector
         self.population = []
@@ -152,15 +153,26 @@ class GeneticPopulationHandler:
 
         self.evalPop()
         for g in range(self.gen_nbr):
-            print("Gen ", g)
             self.nextGen()
             worst = min(self.population, key=lambda e: e.fitness)
-            print(best, worst.fitness)
             if worst.fitness == best:
-                print("Break after: ", g, " generations")
                 break
-        solution = self.population[-1]
-        return solution.weights, solution.Ti, solution.Tj, solution.prefFactor
+        return self.analyse_sample()
 
     def getSolution(self):
         return self.population[-1]
+
+    def analyse_sample(self):
+        data = []
+        res = []
+        total = 0
+        samples = [[w for w in p.weights] + [p.Ti, p.Tj, p.prefFactor] for p in self.population]
+        for c in range(len(samples[0])):
+            x = [s[c] for s in samples]
+            data.append(x)
+            total += max(x) - min(x)
+            res.append(np.percentile(x, 50))
+        return res[:-3], res[-3], res[-2], res[-1]
+
+    def name(self):
+        return "genetic"
