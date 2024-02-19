@@ -48,8 +48,12 @@ if __name__ == "__main__":
     TIMES_Q13 = "data/TIMES_1and3_quartiles"
     datasets = [SHA_Q13, HDI_Q13, HDI_20, EPI2020_Q13, TIMES_Q13]
     # datasets = [HDI_Q13]
-    procedures = [SampleBasedProcedure, GeneticPopulationHandler]
+    # procedures = [SampleBasedProcedure, GeneticPopulationHandler]
+    # procedures = [SampleBasedProcedure]
+    procedures = [GeneticPopulationHandler]
     query_selectors = [vote_based_query, discrimination_power_based_query]
+    # query_selectors = [vote_based_query]
+    # query_selectors = [discrimination_power_based_query]
 
     query_number = 20
     size = 100
@@ -67,11 +71,11 @@ if __name__ == "__main__":
                 accuracies_dataset = compute_accuracy(A, pref_fct, query_number, tests, size, procedure, query_selector)
 
                 misc.print_accuracies(accuracies_dataset)
-                accuracies.extend(accuracies_dataset)
+                accuracies.append(accuracies_dataset)
 
             file_name = procedure.__name__ + "_" + query_selector.__name__ + "_query_" + str(
                 query_number) + "_tests_" + str(tests) + "_size_" + str(size)
-            with open("results/" + file_name + ".txt", "w") as file:
+            with open("../results/" + file_name + ".txt", "w") as file:
                 for ai, a in enumerate(accuracies):
-                    file.write(datasets[ai])
-                    file.write(str(a))
+                    file.write(datasets[ai] + " ")
+                    file.write(str(a) + "\n")

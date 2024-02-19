@@ -1,2 +1,3 @@
 if __name__ == "__main__":
-    print("Hello world")
+    with open("results/test", "w") as file:
+        file.write("Hello")

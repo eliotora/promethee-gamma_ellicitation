@@ -1,4 +1,5 @@
 from numpy.random import randint
+from tqdm import tqdm
 
 from ellicitation import misc
 from promethee_gamma import PrometheePlotter
@@ -32,13 +33,10 @@ def elicitationProcedure(A, pref_fct, query_nbr, size, procedure, query_selector
 
     # Procedure
     procedure = procedure(size, A, pref_fct, query_selector, dm.pgInstance.phis_c)
-    # procedure = GeneticPopulationHandler(size, A, pref_fct, vote_based_query, dm.pgInstance.phis_c)
-    # procedure = GeneticPopulationHandler(size, A, pref_fct, discrimination_power_based_query, dm.pgInstance.phis_c)
-    # procedure = SampleBasedProcedure(size, A, pref_fct, vote_based_query, dm.pgInstance.phis_c)
-    # procedure = SampleBasedProcedure(size, A, pref_fct, discrimination_power_based_query, dm.pgInstance.phis_c)
-    print("Query: ", end=" ")
-    for q in range(query_nbr):
-        print(q, end=" ")
+
+    # print("Query: ", end=" ")
+    for q in tqdm(range(query_nbr)):
+        # print(q, end=" ")
         i, j = procedure.next_query()
 
         while asked_pref[i][j] != 0:

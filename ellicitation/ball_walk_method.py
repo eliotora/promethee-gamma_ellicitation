@@ -121,15 +121,17 @@ class SampleBasedProcedure:
         else:
             point = self.samples[0]
 
-        for s in range(self.Nsamples - len(self.samples)):
+        while len(self.samples) < self.Nsamples:
             step = [random.random() * delta * 2 - delta for d in range(D)]
             next_point = [point[d] + step[d] for d in range(D)]
             next_point = normalize_weights(next_point)
 
-            while not satisfy(next_point, self.constraints):
+            tries = 0
+            while not satisfy(next_point, self.constraints) and tries < 10000:
                 step = [random.random() * delta * 2 - delta for d in range(D)]
                 next_point = [point[d] + step[d] for d in range(D)]
                 next_point = normalize_weights(next_point)
+                tries += 1
 
             point = next_point
 
