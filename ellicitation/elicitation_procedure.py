@@ -36,7 +36,6 @@ def elicitationProcedure(A, pref_fct, query_nbr, size, procedure, query_selector
 
     # print("Query: ", end=" ")
     for q in tqdm(range(query_nbr)):
-        # print(q, end=" ")
         i, j = procedure.next_query()
 
         while asked_pref[i][j] != 0:

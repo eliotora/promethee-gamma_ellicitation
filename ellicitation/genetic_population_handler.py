@@ -1,7 +1,8 @@
 from random import random, choice
 import numpy as np
-from genetic_approx import GeneticSolution
-from query_selector import *
+# from genetic_approx import GeneticSolution
+from ellicitation.genetic_approx import GeneticSolution
+from ellicitation.query_selector import *
 
 
 class GeneticPopulationHandler:
@@ -140,9 +141,9 @@ class GeneticPopulationHandler:
         return GeneticSolution(w_new, indT_new, incT_new, Pf, self.A, self.pref_fct)
 
     def next_query(self):
-        if self.query_selector == vote_based_query:
+        if self.query_selector.__name__ == vote_based_query.__name__ or self.query_selector.__name__ == votes_with_percentages.__name__:
             return self.query_selector(self.A, self.population)
-        elif self.query_selector == discrimination_power_based_query:
+        elif self.query_selector.__name__ == discrimination_power_based_query.__name__:
             phic = self.population[0].handler.phis_c
             samples = [p.weights + [p.Ti] + [p.Tj] + [p.prefFactor] for p in self.population]
             return self.query_selector(phic, samples)

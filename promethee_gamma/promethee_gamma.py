@@ -70,6 +70,20 @@ class PrometheeGammaInstance:
     def plot(self):
         self.plotter.plot_gammas(self.gammas, self.pref, self.Pf, self.Ti, self.Tj)
 
+    def get_votes(self, i, j):
+        Pij = self.gammas[i][j] - self.gammas[j][i]
+        Pji = self.gammas[j][i] - self.gammas[i][j]
+        Iij = self.Ti - max(self.gammas[i][j], self.gammas[j][i])
+        Jij = min(self.gammas[i][j], self.gammas[j][i]) - self.Tj
+        M = max([abs(Pij), abs(Iij), abs(Jij)])
+        norm = 4 * M + Pij + Pji + Iij + Jij
+        return [
+            (M + Pij) / norm,
+            (M + Pji) / norm,
+            (M + Iij) / norm,
+            (M + Jij) / norm
+        ]
+
 
 if __name__ == "__main__":
     # dataset = "data/HDI20_Classic"

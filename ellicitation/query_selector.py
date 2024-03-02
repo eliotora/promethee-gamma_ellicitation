@@ -2,6 +2,21 @@ import numpy as np
 import scipy.stats as ss
 
 
+def votes_with_percentages(A, population):
+    best_to_query = [0, 0, 0]
+    for i in range(len(A)):
+        for j in range(len(A)):
+            votes = [1, 1, 1, 1]
+            for solution in population:
+                vote_perc = solution.handler.get_votes(i, j)
+                for v in range(len(vote_perc)):
+                    votes[v] += vote_perc[v]
+            disagreement = (votes[0]) * (votes[1]) * (votes[2]) * (votes[3])
+            if disagreement > best_to_query[2]:
+                best_to_query = [i, j, disagreement]
+    return best_to_query[:-1]
+
+
 def vote_based_query(A, population):
     best_to_query = [0, 0, 0]
     for i in range(len(A)):
@@ -10,7 +25,7 @@ def vote_based_query(A, population):
             for solution in population:
                 votes[solution.handler.pref[i][j] - 1] += 1
             # disagreement = np.sqrt(votes[0] ** 2 + votes[1] ** 2 + votes[2] ** 2 + votes[3] ** 2)
-            disagreement = (votes[0])*(votes[1])*(votes[2])*(votes[3])
+            disagreement = (votes[0]) * (votes[1]) * (votes[2]) * (votes[3])
             if disagreement > best_to_query[2]:
                 best_to_query = [i, j, disagreement]
     return best_to_query[:-1]

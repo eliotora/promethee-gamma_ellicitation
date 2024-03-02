@@ -1,6 +1,6 @@
 from ellicitation.genetic_population_handler import GeneticPopulationHandler
 from ellicitation.ball_walk_method import SampleBasedProcedure
-from ellicitation.query_selector import discrimination_power_based_query, vote_based_query
+from ellicitation.query_selector import discrimination_power_based_query, vote_based_query, votes_with_percentages
 import os
 
 procedures_dict = {
@@ -10,7 +10,8 @@ procedures_dict = {
 
 query_selector_dict = {
     discrimination_power_based_query.__name__: discrimination_power_based_query,
-    vote_based_query.__name__: vote_based_query
+    vote_based_query.__name__: vote_based_query,
+    votes_with_percentages.__name__: votes_with_percentages
 }
 
 
@@ -49,7 +50,8 @@ def run_test(file_path):
 
 if __name__ == "__main__":
     procedures = [SampleBasedProcedure, GeneticPopulationHandler]
-    queries = [discrimination_power_based_query, vote_based_query]
+    # queries = [discrimination_power_based_query, vote_based_query]
+    queries = [votes_with_percentages]
     methods = [[p, q] for p in procedures for q in queries]
     init_tests(methods, 5)
     #

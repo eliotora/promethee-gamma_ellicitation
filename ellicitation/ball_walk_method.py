@@ -1,7 +1,7 @@
 import random
 import numpy as np
-from genetic_approx import GeneticSolution
-from query_selector import *
+from ellicitation.genetic_approx import GeneticSolution
+from ellicitation.query_selector import *
 from PrometheePlotter import I, J, P, nP
 
 
@@ -140,9 +140,9 @@ class SampleBasedProcedure:
         return
 
     def next_query(self):
-        if self.query_selector == discrimination_power_based_query:
+        if self.query_selector.__name__ == discrimination_power_based_query.__name__:
             return self.query_selector(self.phi_c, self.samples)
-        elif self.query_selector == vote_based_query:
+        elif self.query_selector.__name__ == vote_based_query.__name__ or self.query_selector.__name__ == votes_with_percentages.__name__:
             population = [GeneticSolution(s[:-3], s[-3], s[-2], s[-1], self.A, self.pref_fct) for s in self.samples]
             return self.query_selector(self.A, population)
 
