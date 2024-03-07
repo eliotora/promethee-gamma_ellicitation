@@ -15,19 +15,24 @@ class ParticleHandler:
         self.query_selector = query_selector
         self.particles = []
         self.global_best = []
-        self.global_best_fitness = 0
-        acceleration_coefs = [2, 2]
+        self.global_best_fitness = -1
+        acceleration_coefs = [0.1, 0.1]
         for i in range(particle_nbr):
             Pf = random() * 5
             indT = random() / 5
             incT = max(0.15, indT) + random() / 5
             w = [random() for _ in range(len(pref_fct))]
             w = [i / sum(w) for i in w]
-            self.particles.append(Particle(w, indT, incT, Pf, A, pref_fct, query_selector, acceleration_coefs))
+            self.particles.append(Particle(w, indT, incT, Pf, A, pref_fct, acceleration_coefs))
 
     def eval_particles(self):
         for p in self.particles:
-            p.evaluate(self.asked_pref)
+            f = p.evaluate(self.asked_pref)
+            if f > self.global_best_fitness:
+                self.global_best_fitness = f
+                self.global_best = deepcopy(p.position)
+                for p in self.particles:
+                    p.update_global_best(self.global_best)
         self.particles.sort(key=lambda p: p.fitness)
 
     def move(self):

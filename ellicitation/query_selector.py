@@ -16,6 +16,9 @@ def votes_with_percentages(A, population):
                 best_to_query = [i, j, disagreement]
     return best_to_query[:-1]
 
+def votes_with_scores(A, population):
+    pass
+
 
 def vote_based_query(A, population):
     best_to_query = [0, 0, 0]
