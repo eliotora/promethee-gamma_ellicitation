@@ -25,6 +25,7 @@ class Particle:
         self.acoef2 = acceleration_coefs[1]
 
     def evaluate(self, knownPref):
+        self.handler.compute_preferences()
         computedPref = self.handler.pref
         self.fitness = 0
         for i in range(len(knownPref)):
@@ -49,9 +50,40 @@ class Particle:
                          self.acoef1 * speed1.dot((self.personal_best - self.position)) +
                          self.acoef2 * speed2.dot((self.global_best - self.position)))
         self.position += self.velocity
+        # print("Before: ", self.position)
+        if self.position[-3] < 0:
+            self.position[-3] = 0
+        if self.position[-2] < self.position[-3]:
+            self.position[-2] = self.position[-3]
+        if self.position[-1] <= 0:
+            self.position[-1] = 0.001
+        for i in range(len(self.position[:-3])):
+            if self.position[i] < 0:
+                self.position[i] = 0
+        self.position = np.append(np.array([w/sum(self.position[:-3]) for w in self.position[:-3]]), self.position[-3:])
+        self.handler.w = self.position[:-3]
+        self.handler.Ti = self.position[-3]
+        self.handler.Tj = self.position[-2]
+        self.handler.Pf = self.position[-1]
+        self.handler.compute_gammas()
 
-    def reduce_inertia(self, quantity):
-        self.inertia -= quantity
+        # print("After: ", self.position)
+        # self.check_constraints()
+
+    def check_constraints(self):
+        w = self.position[:-3]
+        Ti = self.position[-3]
+        Tj = self.position[-2]
+        Pf = self.position[-1]
+        for weight in w:
+            if weight <0:
+                print("Weight: ", weight)
+        print(sum(w))
+        if Ti < 0 or Tj < Ti or Pf <= 0:
+            print("Error on parameters")
+
+    def set_inertia(self, inertia):
+        self.inertia = inertia
 
     def reset_inertia(self):
         self.inertia = 1

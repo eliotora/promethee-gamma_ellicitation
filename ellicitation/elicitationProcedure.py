@@ -48,19 +48,20 @@ if __name__ == "__main__":
     EPI2020_Q13 = "data/EPI2020_1and3_quartiles"
     TIMES_Q13 = "data/TIMES_1and3_quartiles"
     # datasets = [SHA_Q13, HDI_Q13, HDI_20, EPI2020_Q13, TIMES_Q13]
-    datasets = [HDI_Q13]
+    # datasets = [HDI_Q13]
+    datasets = [SHA_Q13]
     # procedures = [SampleBasedProcedure, GeneticPopulationHandler]
     # procedures = [SampleBasedProcedure]
     # procedures = [GeneticPopulationHandler]
     procedures = [ParticleHandler]
-    query_selectors = [vote_based_query, discrimination_power_based_query, votes_with_percentages]
-    # query_selectors = [vote_based_query]
+    # query_selectors = [vote_based_query, discrimination_power_based_query, votes_with_percentages]
+    query_selectors = [vote_based_query]
     # query_selectors = [votes_with_percentages]
     # query_selectors = [discrimination_power_based_query]
 
     query_number = 20
-    size = 100
-    tests = 1
+    size = 50
+    tests = 10
 
     for procedure in procedures:
         for query_selector in query_selectors:

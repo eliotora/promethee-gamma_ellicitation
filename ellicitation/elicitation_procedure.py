@@ -49,4 +49,5 @@ def elicitationProcedure(A, pref_fct, query_nbr, size, procedure, query_selector
         accuracies.append(accuracy)
     print()
     w, Ti, Tj, Pf = procedure.analyse_sample()
+    print(w, "\n", Ti, Tj, Pf, "\n", dm.w, dm.indT, dm.incT, dm.prefFact ,"\n", accuracies)
     return w, Ti, Tj, Pf, accuracies
