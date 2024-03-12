@@ -10,8 +10,8 @@ class ParticleHandler:
         self.asked_pref = [[0 for _ in range(len(A))] for _ in range(len(A))]
         self.iterations = 100
         self.inertia = 1
-        self.min_inertia = 0.4
-        self.inertia_reduction = (1 - self.min_inertia)/self.iterations
+        self.min_inertia = 0.1
+        self.inertia_reduction = 2*(1 - self.min_inertia)/self.iterations
         # self.inertia_reduction = 0
         self.A = A
         self.phis_c = phis_c
@@ -21,7 +21,7 @@ class ParticleHandler:
         self.particles = []
         self.global_best = []
         self.global_best_fitness = -1
-        self.acceleration_coefs = [0.1, 0.2]
+        self.acceleration_coefs = [0.1, 0.1]
         for i in range(particle_nbr):
             Pf = random() * 5
             indT = random() / 5
@@ -37,11 +37,11 @@ class ParticleHandler:
         for p in self.particles:
             f = p.evaluate(self.asked_pref)
             if f > self.global_best_fitness:
-                print("New best fitness", f)
+                # print("New best fitness", f)
                 self.global_best_fitness = f
                 self.global_best = deepcopy(p.position)
                 for p in self.particles:
-                    p.update_global_best(self.global_best)
+                    p.update_global_best(self.global_best, self.global_best_fitness)
         self.particles.sort(key=lambda p: p.fitness)
         # print("\nWeights: Pos: ", self.particles[-1].position[:-3], "   Velocity: ", self.particles[-1].velocity[:-3],
         #       "\nTi: Pos:", self.particles[-1].position[-3], "   Velocity: ", self.particles[-1].velocity[-3],
@@ -65,7 +65,7 @@ class ParticleHandler:
             w = [random() for _ in range(len(self.pref_fct))]
             w = [i / sum(w) for i in w]
             self.particles.append(Particle(w, indT, incT, Pf, self.A, self.pref_fct, self.acceleration_coefs))
-            self.particles[-1].update_global_best(self.global_best)
+            self.particles[-1].update_global_best(self.global_best, self.global_best_fitness)
 
     def move(self):
         if self.inertia > self.min_inertia:
@@ -75,12 +75,12 @@ class ParticleHandler:
             p.set_inertia(self.inertia)
             f = p.evaluate(self.asked_pref)
             if f > self.global_best_fitness:
-                print("New best fitness!", f)
+                # print("New best fitness!", f)
                 self.global_best_fitness = f
                 self.global_best = deepcopy(p.position)
                 for p in self.particles:
-                    p.update_global_best(self.global_best)
-        print("Average distance this time: ", np.average([np.linalg.norm(p.velocity) for p in self.particles]))
+                    p.update_global_best(self.global_best, f)
+        # print("Average distance this time: ", np.average([np.linalg.norm(p.velocity) for p in self.particles]), "\t Max: ", np.max([np.linalg.norm(p.velocity) for p in self.particles]), "\t Min fitness: ", np.min([p.fitness for p in self.particles]))
         self.inertia = 1
 
     def next_query(self):
@@ -98,13 +98,17 @@ class ParticleHandler:
         self.eval_particles()
         for it in range(self.iterations):
             self.move()
-            worst = min(self.particles, key=lambda p: p.fitness)
+            worst = min(self.particles, key=lambda p: p.personal_best_fitness)
             # print("Worst: ", worst.fitness, "\t Best: ", best)
-            print("Average fitness at it {}: ".format(it), np.average([p.fitness for p in self.particles]), "\t over ", best)
+            # print("Average fitness at it {}: ".format(it), np.average([p.fitness for p in self.particles]), "\t over ", best)
             if worst.fitness == best:
-                print("Broke after {} iterations".format(it))
+                for p in self.particles:
+                    if p.fitness != p.personal_best_fitness:
+                        p.position = deepcopy(p.personal_best)
+                # print("Broke after {} iterations".format(it))
                 break
         # for p in self.particles: p.reset_inertia()
+        for p in self.particles: p.reset_velocity()
         return self.analyse_sample()
 
     def getSolution(self):

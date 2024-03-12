@@ -20,6 +20,7 @@ class Particle:
         self.personal_best = deepcopy(self.position)
         self.personal_best_fitness = 0
         self.global_best = None
+        self.global_best_fitness = 0
         self.fitness = 0
         self.acoef1 = acceleration_coefs[0]
         self.acoef2 = acceleration_coefs[1]
@@ -39,18 +40,18 @@ class Particle:
             self.personal_best = deepcopy(self.position)
         return self.fitness
 
-    def update_global_best(self, global_best):
+    def update_global_best(self, global_best, fitness):
         self.global_best = global_best
+        self.global_best_fitness = fitness
 
     def move(self):
         dim = len(self.position)
         speed1 = np.eye(dim) * np.array([random() for _ in range(dim)])
         speed2 = np.eye(dim) * np.array([random() for _ in range(dim)])
         self.velocity = (self.velocity * self.inertia +
-                         self.acoef1 * speed1.dot((self.personal_best - self.position)) +
-                         self.acoef2 * speed2.dot((self.global_best - self.position)))
+                         (self.personal_best_fitness - self.fitness) * self.acoef1 * speed1.dot((self.personal_best - self.position)) +
+                         (self.global_best_fitness - self.fitness) * self.acoef2 * speed2.dot((self.global_best - self.position)))
         self.position += self.velocity
-        # print("Before: ", self.position)
         if self.position[-3] < 0:
             self.position[-3] = 0
         if self.position[-2] < self.position[-3]:
@@ -87,3 +88,6 @@ class Particle:
 
     def reset_inertia(self):
         self.inertia = 1
+
+    def reset_velocity(self):
+        self.velocity = np.array([0 for _ in self.weights] + [0, 0, 0]).astype("float64")
