@@ -142,7 +142,8 @@ class SampleBasedProcedure:
     def next_query(self):
         if self.query_selector.__name__ == discrimination_power_based_query.__name__:
             return self.query_selector(self.phi_c, self.samples)
-        elif self.query_selector.__name__ == vote_based_query.__name__ or self.query_selector.__name__ == votes_with_percentages.__name__:
+        elif (self.query_selector.__name__ == vote_based_query.__name__ or self.query_selector.__name__ == votes_with_percentages.__name__ or
+                self.query_selector.__name__ == votes_with_scores.__name__):
             population = [GeneticSolution(s[:-3], s[-3], s[-2], s[-1], self.A, self.pref_fct) for s in self.samples]
             return self.query_selector(self.A, population)
 

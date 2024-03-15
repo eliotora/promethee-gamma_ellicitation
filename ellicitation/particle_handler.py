@@ -84,7 +84,9 @@ class ParticleHandler:
         self.inertia = 1
 
     def next_query(self):
-        if self.query_selector.__name__ == vote_based_query.__name__ or self.query_selector.__name__ == votes_with_percentages.__name__:
+        if (self.query_selector.__name__ == vote_based_query.__name__ or
+                self.query_selector.__name__ == votes_with_percentages.__name__ or
+                self.query_selector.__name__ == votes_with_scores.__name__):
             return self.query_selector(self.A, self.particles)
         elif self.query_selector.__name__ == discrimination_power_based_query.__name__:
             phic = self.particles[0].handler.phis_c

@@ -1,23 +1,48 @@
+import math
+from copy import deepcopy
+
 import numpy as np
 import scipy.stats as ss
+
+
+def get_percentages(indicators):
+    Iij, Jij, Pij, Pji = indicators
+    M = max([abs(Pij), abs(Iij), abs(Jij)])
+    norm = 4 * M + Pij + Pji + Iij + Jij
+    return np.array([
+        (M + Pij) / norm,
+        (M + Pji) / norm,
+        (M + Iij) / norm,
+        (M + Jij) / norm
+    ])
 
 
 def votes_with_percentages(A, population):
     best_to_query = [0, 0, 0]
     for i in range(len(A)):
         for j in range(len(A)):
-            votes = [1, 1, 1, 1]
+            votes = np.array([1, 1, 1, 1]).astype("float32")
             for solution in population:
-                vote_perc = solution.handler.get_votes(i, j)
-                for v in range(len(vote_perc)):
-                    votes[v] += vote_perc[v]
+                indicators = deepcopy(solution.indicators[i][j])
+                votes += get_percentages(indicators)
             disagreement = (votes[0]) * (votes[1]) * (votes[2]) * (votes[3])
             if disagreement > best_to_query[2]:
                 best_to_query = [i, j, disagreement]
     return best_to_query[:-1]
 
+
 def votes_with_scores(A, population):
-    pass
+    best_to_query = [0, 0, math.inf]
+    for i in range(len(A)):
+        for j in range(len(A)):
+            scores = np.array([0, 0, 0, 0]).astype('float32')
+            for solution in population:
+                scores += np.array(solution.indicators[i][j])
+            norm_score = np.linalg.norm(scores)
+            if norm_score < best_to_query[2]:
+                best_to_query = [i, j, norm_score]
+
+    return best_to_query[:-1]
 
 
 def vote_based_query(A, population):
@@ -26,11 +51,12 @@ def vote_based_query(A, population):
         for j in range(len(A)):
             votes = [1, 1, 1, 1]
             for solution in population:
-                votes[solution.handler.pref[i][j] - 1] += 1
+                votes[solution.pref[i][j] - 1] += 1
             # disagreement = np.sqrt(votes[0] ** 2 + votes[1] ** 2 + votes[2] ** 2 + votes[3] ** 2)
             disagreement = (votes[0]) * (votes[1]) * (votes[2]) * (votes[3])
             if disagreement > best_to_query[2]:
                 best_to_query = [i, j, disagreement]
+
     return best_to_query[:-1]
 
 

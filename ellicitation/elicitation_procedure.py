@@ -3,10 +3,7 @@ from tqdm import tqdm
 
 from ellicitation import misc
 from promethee_gamma import PrometheePlotter
-from decision_maker import DecisionMaker
-from genetic_population_handler import GeneticPopulationHandler
-from query_selector import *
-from ball_walk_method import SampleBasedProcedure
+from ellicitation.decision_maker import DecisionMaker
 
 
 def determine_next_query(A):

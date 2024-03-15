@@ -54,9 +54,10 @@ if __name__ == "__main__":
     # procedures = [SampleBasedProcedure]
     # procedures = [GeneticPopulationHandler]
     procedures = [ParticleHandler]
-    # query_selectors = [vote_based_query, discrimination_power_based_query, votes_with_percentages]
-    query_selectors = [vote_based_query]
+    # query_selectors = [vote_based_query, discrimination_power_based_query, votes_with_percentages, votes_with_scores]
+    # query_selectors = [vote_based_query]
     # query_selectors = [votes_with_percentages]
+    query_selectors = [votes_with_scores]
     # query_selectors = [discrimination_power_based_query]
 
     query_number = 20

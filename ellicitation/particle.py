@@ -1,5 +1,6 @@
 from random import random
 
+from basic_instance import BasicInstance
 from promethee_gamma import PrometheeGammaInstance
 from copy import *
 import numpy as np
@@ -16,6 +17,7 @@ class Particle:
         self.Pf = Pf
         self.position = np.array(w + [self.Ti, self.Tj, self.Pf])
         self.handler = PrometheeGammaInstance(A, w, prefFun, indT, incT, Pf)
+        self.handler = BasicInstance(A, prefFun)
         self.velocity = np.array([0 for _ in w] + [0, 0, 0]).astype("float64")
         self.personal_best = deepcopy(self.position)
         self.personal_best_fitness = 0
@@ -24,16 +26,19 @@ class Particle:
         self.fitness = 0
         self.acoef1 = acceleration_coefs[0]
         self.acoef2 = acceleration_coefs[1]
+        self.indicators = self.handler.compute_indicators(self.handler.compute_gammas(self.weights), self.Ti, self.Tj, self.Pf)
+        self.pref = self.handler.prefs_from_indicators(self.indicators)
+
 
     def evaluate(self, knownPref):
-        self.handler.compute_preferences()
-        computedPref = self.handler.pref
+        self.indicators = self.handler.compute_indicators(self.handler.compute_gammas(self.weights), self.Ti, self.Tj, self.Pf)
+        self.pref = self.handler.prefs_from_indicators(self.indicators)
         self.fitness = 0
         for i in range(len(knownPref)):
             for j, pref in enumerate(knownPref[i]):
                 if pref == 0:
                     pass
-                elif pref == computedPref[i][j]:
+                elif pref == self.pref[i][j]:
                     self.fitness += 1
         if self.fitness >= self.personal_best_fitness:
             self.personal_best_fitness = self.fitness
@@ -62,11 +67,10 @@ class Particle:
             if self.position[i] < 0:
                 self.position[i] = 0
         self.position = np.append(np.array([w/sum(self.position[:-3]) for w in self.position[:-3]]), self.position[-3:])
-        self.handler.w = self.position[:-3]
-        self.handler.Ti = self.position[-3]
-        self.handler.Tj = self.position[-2]
-        self.handler.Pf = self.position[-1]
-        self.handler.compute_gammas()
+        self.weights = self.position[:-3]
+        self.Ti = self.position[-3]
+        self.Tj = self.position[-2]
+        self.Pf = self.position[-1]
 
         # print("After: ", self.position)
         # self.check_constraints()
