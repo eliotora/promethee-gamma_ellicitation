@@ -166,6 +166,7 @@ def discrimination_power_based_query(phi_c, samples, beta=30, alpha=10):
     # print("next query: ")
     w_center = compute_center(samples)  # to adapt using analytical center -> see analytical_center2.py
     w_center = w_center[:-3]
+    w_center = np.array(w_center)
     #   print("\t center:", list(w_center))
 
     bests = beta_best(phi_c, w_center, beta)

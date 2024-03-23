@@ -16,7 +16,7 @@ class Particle:
         self.Tj = incT
         self.Pf = Pf
         self.position = np.array(w + [self.Ti, self.Tj, self.Pf])
-        self.handler = PrometheeGammaInstance(A, w, prefFun, indT, incT, Pf)
+        # self.handler = PrometheeGammaInstance(A, w, prefFun, indT, incT, Pf)
         self.handler = BasicInstance(A, prefFun)
         self.velocity = np.array([0 for _ in w] + [0, 0, 0]).astype("float64")
         self.personal_best = deepcopy(self.position)

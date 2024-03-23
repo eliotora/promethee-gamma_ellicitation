@@ -4,8 +4,8 @@ from ellicitation.query_selector import *
 from ellicitation.particle_handler import ParticleHandler
 
 procedures_dict = {
-    SampleBasedProcedure.__name__: SampleBasedProcedure,
-    GeneticPopulationHandler.__name__: GeneticPopulationHandler,
+    # SampleBasedProcedure.__name__: SampleBasedProcedure,
+    # GeneticPopulationHandler.__name__: GeneticPopulationHandler,
     ParticleHandler.__name__: ParticleHandler
 }
 

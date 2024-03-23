@@ -91,6 +91,8 @@ class ParticleHandler:
         elif self.query_selector.__name__ == discrimination_power_based_query.__name__:
             phic = self.particles[0].handler.phis_c
             samples = [p.weights + [p.Ti] + [p.Tj] + [p.Pf] for p in self.particles]
+            print(self.particles[0].weights)
+            print(self.particles[0].Ti, self.particles[0].Tj, self.particles[0].Pf)
             return self.query_selector(phic, samples)
 
     def assimilate_query(self, i, j, answer):

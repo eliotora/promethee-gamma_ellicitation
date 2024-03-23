@@ -1,3 +1,5 @@
+import numpy as np
+
 from PrometheePlotter import PrometheePlotter, I, J, P, nP
 
 class BasicInstance:
@@ -17,6 +19,7 @@ class BasicInstance:
                     phi += self.pref_fct[ci].value(a[ci] - b[ci]) - self.pref_fct[ci].value(b[ci] - a[ci])
                 phi /= len(self.A) - 1
                 self.phis_c[ai][ci] = phi
+        self.phis_c = np.array(self.phis_c)
         self.phi_flag = True
 
     def compute_gammas(self, w):
